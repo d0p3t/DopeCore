@@ -31,60 +31,66 @@ namespace DopeCoreClient.Shops
 
         private async Task OnTick()
         {
-            await Task.FromResult(0);
-
-            if (!Game.PlayerPed.IsInVehicle()) return;
-            
-            var playerPed = Game.PlayerPed;
-            
-            if (playerPed.Position.DistanceToSquared(VehicleCustomizeShopDoorLocation) < 4 && !_hasEntered)
+            try
             {
-                Game.DisableAllControlsThisFrame(0);
-                Screen.Fading.FadeOut(50);
+                if (!Game.PlayerPed.IsInVehicle()) return;
                 
-                playerPed.CurrentVehicle.Speed = 0f;
-                playerPed.CurrentVehicle.PositionNoOffset = VehicleCustomizeShopSafePositionOnEntry;
+                var playerPed = Game.PlayerPed;
                 
-                Screen.Fading.FadeIn(250);
-                
-                playerPed.Task.DriveTo(playerPed.CurrentVehicle, VehicleCustomizeShopLocation, 1f, 10f);
-                
-                _hasEntered = true;
-                
-                // TODO Add synchronization of shop occupancy
-                TriggerServerEvent("VehicleCustomizeShop:Occupancy", true);
-            }
-
-            if (_hasEntered)
-            {
-                // Disable controls until car is in place.
-                if(playerPed.Position.DistanceToSquared(VehicleCustomizeShopLocation) > 1f)
-                    Game.DisableAllControlsThisFrame(0);
-                else
+                if (playerPed.Position.DistanceToSquared(VehicleCustomizeShopDoorLocation) < 4 && !_hasEntered)
                 {
-                    DisableVehicleControls();
-                    // If menu is invisible, make visible
-                    // Do camera stuff with menu to apply new mods.
-                    // TODO Menu + Camera stuff
+                    Game.DisableAllControlsThisFrame(0);
+                    Screen.Fading.FadeOut(50);
                     
-                    // If Exit is pressed, drive backwards out of the garage
-                    // Temp bool
-                    if (exiting)
-                    {
+                    playerPed.CurrentVehicle.Speed = 0f;
+                    playerPed.CurrentVehicle.PositionNoOffset = VehicleCustomizeShopSafePositionOnEntry;
+                    
+                    Screen.Fading.FadeIn(250);
+                    
+                    playerPed.Task.DriveTo(playerPed.CurrentVehicle, VehicleCustomizeShopLocation, 1f, 10f);
+                    
+                    _hasEntered = true;
+                    
+                    // TODO Add synchronization of shop occupancy
+                    TriggerServerEvent("VehicleCustomizeShop:Occupancy", true);
+                }
+    
+                if (_hasEntered)
+                {
+                    // Disable controls until car is in place.
+                    if(playerPed.Position.DistanceToSquared(VehicleCustomizeShopLocation) > 1f)
                         Game.DisableAllControlsThisFrame(0);
-                        playerPed.Task.DriveTo(playerPed.CurrentVehicle, VehicleCustomizeShopDoorLocation, 1f, 10f,
-                            (int) DrivingStyle.Backwards);
-                    }
-
-                    // TODO Find a way so that entering procedure doesn't get triggered again after leaving
-                    
-                    if (playerPed.CurrentVehicle.Position.DistanceToSquared(VehicleCustomizeShopDoorLocation) > 400f) // Temp Fix
+                    else
                     {
-                        _hasEntered = false;
-                        TriggerServerEvent("VehicleCustomizeShop:Occupancy", false);
+                        DisableVehicleControls();
+                        // If menu is invisible, make visible
+                        // Do camera stuff with menu to apply new mods.
+                        // TODO Menu + Camera stuff
+                        
+                        // If Exit is pressed, drive backwards out of the garage
+                        // Temp bool
+                        if (exiting)
+                        {
+                            Game.DisableAllControlsThisFrame(0);
+                            playerPed.Task.DriveTo(playerPed.CurrentVehicle, VehicleCustomizeShopDoorLocation, 1f, 10f,
+                                (int) DrivingStyle.Backwards);
+                        }
+    
+                        // TODO Find a way so that entering procedure doesn't get triggered again after leaving
+                        
+                        if (playerPed.CurrentVehicle.Position.DistanceToSquared(VehicleCustomizeShopDoorLocation) > 400f) // Temp Fix
+                        {
+                            _hasEntered = false;
+                            TriggerServerEvent("VehicleCustomizeShop:Occupancy", false);
+                        }
                     }
                 }
             }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.Message);
+            }
+            await Task.FromResult(0);
         }
 
         private static void DisableVehicleControls()

@@ -95,7 +95,10 @@ namespace DopeCoreClient
             playerPed.PositionNoOffset = PlayerHousePosition;
             playerPed.Heading = 0.0f;
             
-            ClearPedTasksImmediately(playerPed.Handle);
+            playerPed.ClearBloodDamage();
+            playerPed.Task.ClearAllImmediately();
+
+            player.WantedLevel = 0;
             ClearPlayerWantedLevel(player.Handle);
 
             while (!HasCollisionLoadedAroundEntity(playerPed.Handle))

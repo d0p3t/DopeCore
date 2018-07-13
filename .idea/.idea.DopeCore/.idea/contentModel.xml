@@ -19,6 +19,7 @@
           <e p="VehicleDealershipShop.cs" t="Include" />
         </e>
         <e p="SpawnManagement.cs" t="Include" />
+        <e p="WantedLevelHandler.cs" t="Include" />
       </e>
       <e p="DopeCoreServer" t="IncludeRecursive">
         <e p="bin" t="ExcludeRecursive" />

@@ -76,227 +76,292 @@ namespace DopeCoreClient.Missions
 
         private async Task OnTick()
         {
-            if (vehicle != null)
+            try
             {
-                vehicleBlip.Position = vehicle.Position;
-                vehicleBlip.ShowRoute = false;
-                vehicleBlip.Sprite = BlipSprite.BigCircle;
-                vehicleBlip.Color = BlipColor.Yellow;
-            }
-            else
-            {
-                vehicleBlip.Delete();
-            }
-            
-            if (Game.IsControlJustReleased(0, Control.Context) && _isNear && _isStarted == false)
-            {
-                var playerPed = Game.PlayerPed;
-                _isStarted = true;
-                
-                Screen.Fading.FadeOut(500);
-                if (playerPed.IsInVehicle()) playerPed.CurrentVehicle.Delete();
-                playerPed.Position = DropOffStartPosition;
-                
-                vehicle = await World.CreateVehicle(VehicleHash.Faggio, DropOffVehicleStartPosition);
-                FreezeEntityPosition(playerPed.Handle, true);
-                
-                Screen.Fading.FadeIn(500);
-                Audio.PlaySoundFrontend("5s_To_Event_Start_Countdown", "GTAO_FM_Events_Soundset");
-                await Delay(5000);
-                FreezeEntityPosition(playerPed.Handle, false);
-            }
-
-            if (_isStarted)
-            {
-                var playerPed = Game.PlayerPed;
-                if (playerPed.CurrentVehicle != vehicle)
+                if (vehicle != null)
                 {
-                    switch (_currentStage)
-                    {
-                        case Stage.None:
-                            break;
-                        case Stage.First:
-                            Screen.ShowSubtitle("Hop onto the Faggio to START");
-                            break;
-                        case Stage.Second:
-                            break;
-                        case Stage.Third:
-                            break;
-                        case Stage.Fourth:
-                            break;
-                        case Stage.Fifth:
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
+                    vehicleBlip.Position = vehicle.Position;
+                    vehicleBlip.ShowRoute = false;
+                    vehicleBlip.Sprite = BlipSprite.BigCircle;
+                    vehicleBlip.Color = BlipColor.Yellow;
                 }
                 else
                 {
-                    DrawMissionProgressScaleForm();
+                    vehicleBlip.Delete();
+                }
+                
+                if (Game.IsControlJustReleased(0, Control.Context) && _isNear && _isStarted == false)
+                {
+                    var playerPed = Game.PlayerPed;
+                    _isStarted = true;
                     
-                    switch (_currentStage)
+                    Screen.Fading.FadeOut(500);
+                    if (playerPed.IsInVehicle()) playerPed.CurrentVehicle.Delete();
+                    playerPed.Position = DropOffStartPosition;
+                    
+                    vehicle = await World.CreateVehicle(VehicleHash.Faggio, DropOffVehicleStartPosition);
+                    FreezeEntityPosition(playerPed.Handle, true);
+                    
+                    Screen.Fading.FadeIn(500);
+                    Audio.PlaySoundFrontend("5s_To_Event_Start_Countdown", "GTAO_FM_Events_Soundset");
+                    await Delay(5000);
+                    FreezeEntityPosition(playerPed.Handle, false);
+                }
+    
+                if (_isStarted)
+                {
+                    var playerPed = Game.PlayerPed;
+                    if (playerPed.CurrentVehicle != vehicle)
                     {
-                        case Stage.None:
-                            Screen.ShowSubtitle("Deliver the package");
-                            _currentStage = Stage.First;
-                            break;
-                        case Stage.First:
-                            StageOne();
-                            break;
-                        case Stage.Second:
-                            StageTwo();
-                            break;
-                        case Stage.Third:
-                            StageThree();
-                            break;
-                        case Stage.Fourth:
-                            StageFour();
-                            break;
-                        case Stage.Fifth:
-                            StageFive();
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
+                        switch (_currentStage)
+                        {
+                            case Stage.None:
+                                break;
+                            case Stage.First:
+                                Screen.ShowSubtitle("Hop onto the Faggio to START");
+                                break;
+                            case Stage.Second:
+                                break;
+                            case Stage.Third:
+                                break;
+                            case Stage.Fourth:
+                                break;
+                            case Stage.Fifth:
+                                break;
+                            default:
+                                Debug.WriteLine("[DropOff] Stage value out of Range");
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        DrawMissionProgressScaleForm();
+                        
+                        switch (_currentStage)
+                        {
+                            case Stage.None:
+                                Screen.ShowSubtitle("Deliver the package");
+                                _currentStage = Stage.First;
+                                break;
+                            case Stage.First:
+                                StageOne();
+                                break;
+                            case Stage.Second:
+                                StageTwo();
+                                break;
+                            case Stage.Third:
+                                StageThree();
+                                break;
+                            case Stage.Fourth:
+                                StageFour();
+                                break;
+                            case Stage.Fifth:
+                                StageFive();
+                                break;
+                            default:
+                                Debug.WriteLine("[DropOff] Stage value out of range");
+                                break;
+                        }
                     }
                 }
             }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.Message);
+            }
+
+            await Task.FromResult(0);
         }
 
         private async Task OnMissionScaleFormTick()
         {
-            await Task.FromResult(0);
-
-            if (!_isNear)
+            try
             {
-                if(_dropOffMarkerScaleform.IsLoaded) _dropOffMarkerScaleform.Dispose();
-                return;
-            }
+                if (!_isNear)
+                {
+                    if(_dropOffMarkerScaleform.IsLoaded) _dropOffMarkerScaleform.Dispose();
+                    return;
+                }
 
-            var playerPed = Game.PlayerPed;
+                var playerPed = Game.PlayerPed;
             
-            _dropOffMarkerScaleform.CallFunction("SET_MISSION_INFO", "Drop Off", "Action", "Player Info", "", "", true, 1,
-                999, 9999, "");
-            _dropOffMarkerScaleform.Render3D(playerPed.GetOffsetPosition(new Vector3(0, 2f, 0)), - playerPed.Rotation, Vector3.One);
+                _dropOffMarkerScaleform.CallFunction("SET_MISSION_INFO", "Drop Off", "Action", "Player Info", "", "", true, 1,
+                    999, 9999, "");
+                _dropOffMarkerScaleform.Render3D(playerPed.GetOffsetPosition(new Vector3(0, 2f, 0)), - playerPed.Rotation, Vector3.One);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.Message);
+            }
+            
+            await Task.FromResult(0);
         }
 
         private async Task OnMarkerTick()
         {
-            await Task.FromResult(0);
-
-            if (Game.PlayerPed.Position.DistanceToSquared(DropOffMarker) > 1000) return;
+            try
+            {
+                if (Game.PlayerPed.Position.DistanceToSquared(DropOffMarker) > 1000) return;
             
-            World.DrawMarker(MarkerType.HorizontalCircleSkinny, DropOffMarker, Vector3.Zero, Vector3.Zero, Vector3.One, DropOffColor);
-            _isNear = true;
+                World.DrawMarker(MarkerType.HorizontalCircleSkinny, DropOffMarker, Vector3.Zero, Vector3.Zero, Vector3.One, DropOffColor);
+                _isNear = true;
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.Message);
+            }
+            
+            await Task.FromResult(0);
         }
 
         private async void StageOne()
         {
-            await Task.FromResult(0);
-
-            var dropOffLocation = DropOffLocations.First();
-            var playerPos = Game.PlayerPed.Position;
-            
-            if (!deliveryBlip.Exists())
+            try
             {
-                deliveryBlip.Color = BlipColor.Red;
-                deliveryBlip.ShowRoute = true;
-                deliveryBlip.Position = dropOffLocation;
-                deliveryBlip.Sprite = BlipSprite.CaptureBriefcase;
-            }
-
-            if (playerPos.DistanceToSquared(dropOffLocation) < 1000)
-                World.DrawMarker(MarkerType.HorizontalCircleSkinny, dropOffLocation, Vector3.Zero, Vector3.Zero, Vector3.One, DropOffColor);
+                var dropOffLocation = DropOffLocations.First();
+                var playerPos = Game.PlayerPed.Position;
             
-            if (playerPos.DistanceToSquared(dropOffLocation) < 4)
-            {
-                if(Game.PlayerPed.IsInVehicle()) 
-                    Screen.ShowSubtitle("Get out of vehicle to deliver package");
-                else
+                if (!deliveryBlip.Exists())
                 {
-                    Screen.DisplayHelpTextThisFrame("Press ~INPUT_CONTEXT~ to Deliver Package");
+                    deliveryBlip.Color = BlipColor.Red;
+                    deliveryBlip.ShowRoute = true;
+                    deliveryBlip.Position = dropOffLocation;
+                    deliveryBlip.Sprite = BlipSprite.CaptureBriefcase;
+                }
 
-                    if (Game.IsControlJustReleased(0, Control.Context))
+                if (playerPos.DistanceToSquared(dropOffLocation) < 1000)
+                    World.DrawMarker(MarkerType.HorizontalCircleSkinny, dropOffLocation, Vector3.Zero, Vector3.Zero, Vector3.One, DropOffColor);
+            
+                if (playerPos.DistanceToSquared(dropOffLocation) < 4)
+                {
+                    if(Game.PlayerPed.IsInVehicle()) 
+                        Screen.ShowSubtitle("Get out of vehicle to deliver package");
+                    else
                     {
-                        DeliverPackage(Stage.Second);
+                        Screen.DisplayHelpTextThisFrame("Press ~INPUT_CONTEXT~ to Deliver Package");
+
+                        if (Game.IsControlJustReleased(0, Control.Context))
+                        {
+                            DeliverPackage(Stage.Second);
+                        }
                     }
                 }
             }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.Message);
+            }
+
+            await Task.FromResult(0);
         }
 
         private async void StageTwo()
         {
-            await Task.FromResult(0);
-
-            var playerPed = Game.PlayerPed;
-            
-            var dropOffLocation = DropOffLocations[1];
-
-            if (!deliveryBlip.Exists())
+            try
             {
-                deliveryBlip.Color = BlipColor.Red;
-                deliveryBlip.ShowRoute = true;
-                deliveryBlip.Position = dropOffLocation;
-                deliveryBlip.Sprite = BlipSprite.CaptureBriefcase;
-            }
+                var playerPed = Game.PlayerPed;
             
-            // TODO Handle enemy spawns
-            if (playerPed.Position.DistanceToSquared(dropOffLocation) == 75)
-            {
-                var enemyPed = new Ped(CreatePed(0,(uint)PedHash.BikeHire01, dropOffLocation.X, dropOffLocation.Y, dropOffLocation.Z, 0f, true, false));
-                // TODO Create 5 enemies in a certain area or at certain positions and make them aggressive towards PlayerPed.Handle
+                var dropOffLocation = DropOffLocations[1];
+
+                if (!deliveryBlip.Exists())
+                {
+                    deliveryBlip.Color = BlipColor.Red;
+                    deliveryBlip.ShowRoute = true;
+                    deliveryBlip.Position = dropOffLocation;
+                    deliveryBlip.Sprite = BlipSprite.CaptureBriefcase;
+                }
+            
+                // TODO Handle enemy spawns
+                if (playerPed.Position.DistanceToSquared(dropOffLocation) == 75)
+                {
+                    var enemyPed = new Ped(CreatePed(0,(uint)PedHash.BikeHire01, dropOffLocation.X, dropOffLocation.Y, dropOffLocation.Z, 0f, true, false));
+                    // TODO Create 5 enemies in a certain area or at certain positions and make them aggressive towards PlayerPed.Handle
                 
+                }
+
+                if (playerPed.Position.DistanceToSquared(dropOffLocation) < 1000)
+                    World.DrawMarker(MarkerType.HorizontalCircleSkinny, dropOffLocation, Vector3.Zero, Vector3.Zero, Vector3.One, DropOffColor);
+
+                if (playerPed.Position.DistanceToSquared(dropOffLocation) < 4)
+                {
+                    if (playerPed.IsInCombat)
+                    {
+                        Screen.ShowSubtitle("You are in combat");
+                    }
+                    else if (playerPed.IsInVehicle())
+                    {
+                        Screen.ShowSubtitle("Get out of vehicle to deliver package");
+                    }
+                    else
+                    {
+                        DeliverPackage(Stage.Third);
+                    }
+                }
             }
-
-            if (playerPed.Position.DistanceToSquared(dropOffLocation) < 1000)
-                World.DrawMarker(MarkerType.HorizontalCircleSkinny, dropOffLocation, Vector3.Zero, Vector3.Zero, Vector3.One, DropOffColor);
-
-            if (playerPed.Position.DistanceToSquared(dropOffLocation) < 4)
+            catch (Exception e)
             {
-                if (playerPed.IsInCombat)
-                {
-                    Screen.ShowSubtitle("You are in combat");
-                }
-                else if (playerPed.IsInVehicle())
-                {
-                    Screen.ShowSubtitle("Get out of vehicle to deliver package");
-                }
-                else
-                {
-                    DeliverPackage(Stage.Third);
-                }
+                Debug.WriteLine(e.Message);
             }
+
+            await Task.FromResult(0);
         }
 
         private async void StageThree()
         {
-            await Delay(0);
+            try
+            {
+
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.Message);
+            }
+
+            await Task.FromResult(0);
         }
 
         private async void StageFour()
         {
-            await Delay(0);
+            try
+            {
+
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.Message);
+            }
+
+            await Task.FromResult(0);
         }
 
         private async void StageFive()
         {
-            await Delay(0);
+            try
+            {
+
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.Message);
+            }
+
+            await Task.FromResult(0);
         }
 
         private async void DeliverPackage(Stage nextStage)
         {
             Screen.DisplayHelpTextThisFrame("Press ~INPUT_CONTEXT~ to Deliver Package");
 
-            if (Game.IsControlJustReleased(0, Control.Context))
-            {
-                TaskPlayAnim(Game.PlayerPed.Handle, "mp_safehouselost@", "package_dropoff", 1f, 1f, 1500, 0, 1, true,
-                    true, true);
-                await Delay(1500);
-                Audio.PlaySoundFrontend("Beast_Checkpoint", "APT_BvS_Soundset");
-                deliveryBlip.Delete();
-                _packagesDelivered++;
-                _currentStage = nextStage;
-                Screen.ShowSubtitle("Delivery Complete! Deliver next package");
-            }
+            if (!Game.IsControlJustReleased(0, Control.Context)) return;
+
+            TaskPlayAnim(Game.PlayerPed.Handle, "mp_safehouselost@", "package_dropoff", 1f, 1f, 1500, 0, 1, true,
+                true, true);
+            await Delay(1500);
+            Audio.PlaySoundFrontend("Beast_Checkpoint", "APT_BvS_Soundset");
+            deliveryBlip.Delete();
+            _packagesDelivered++;
+            _currentStage = nextStage;
+            Screen.ShowSubtitle("Delivery Complete! Deliver next package");
         }
 
         private void DrawMissionProgressScaleForm()
