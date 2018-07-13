@@ -7,6 +7,9 @@
       <e p="DopeCoreClient" t="IncludeRecursive">
         <e p="bin" t="ExcludeRecursive" />
         <e p="DopeCoreClient.csproj" t="IncludeRecursive" />
+        <e p="FunEvents" t="Include">
+          <e p="ClubEvent.cs" t="Include" />
+        </e>
         <e p="Missions" t="Include">
           <e p="DropOff.cs" t="Include" />
           <e p="TimeTrial.cs" t="Include" />

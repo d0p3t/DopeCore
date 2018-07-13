@@ -20,9 +20,9 @@ namespace DopeCoreClient.Missions
 
         private static readonly Color TimeTrialMarkerColor = Color.FromArgb(255, 255, 255, 255);
 
-        private Scaleform _timetrialMarkerScaleform;
-        private Scaleform _timetrialCountdownScaleform;
-        private Scaleform _timetrialCompletedScaleform;
+        private readonly Scaleform _timetrialMarkerScaleform;
+        private readonly Scaleform _timetrialCountdownScaleform;
+        private readonly Scaleform _timetrialCompletedScaleform;
 
         private bool _isNearTimeTrial;
         private bool _hasStarted;
@@ -38,11 +38,12 @@ namespace DopeCoreClient.Missions
         {
             _timetrialMarkerScaleform = new Scaleform("mp_mission_name_freemode");
             _timetrialCountdownScaleform = new Scaleform("countdown");
+            _timetrialCompletedScaleform = new Scaleform("mp_big_message_freemode");
             
             _hasStarted = false;
+            _countDownDone = false;
             _currentTime = 0;
             _selectedTimeTrial = 0;
-            _countDownDone = false;
             
             Tick += OnTick;
             Tick += OnTimeTrialTick;
@@ -116,7 +117,7 @@ namespace DopeCoreClient.Missions
                             Game.DisableControlThisFrame(0, Control.VehicleSubTurnHardRight);
                             SetVehicleForwardSpeed(playerPed.CurrentVehicle.Handle, 0f);
 
-                            Audio.PlaySoundFromEntity(playerPed, "CHECKPOINT_AHEAD", "HUD_MINI_GAME_SOUNDSET");
+                            Audio.PlaySoundFrontend("CHECKPOINT_AHEAD", "HUD_MINI_GAME_SOUNDSET");
                             _timetrialCountdownScaleform.CallFunction("SET_MESSAGE", $"{countdownTime}", 255, 255, 255,
                                 true);
                             _timetrialCountdownScaleform.Render2D();
@@ -135,22 +136,39 @@ namespace DopeCoreClient.Missions
                     
                     if(_timetrialCountdownScaleform.IsLoaded)
                         _timetrialCountdownScaleform.Dispose();
-                    
-                    if (playerPed.CurrentVehicle.Position.DistanceToSquared(TimeTrials[_selectedTimeTrial].Item6) < 1)
+
+                    while (playerPed.CurrentVehicle.Position.DistanceToSquared(TimeTrials[_selectedTimeTrial].Item6) < 1)
                     {
-                        _finalTime = GetGameTimer() - _gameTimeAtStart;
-                        // TODO RaceComplete Scaleform _timetrialCompletedScaleform
+                        _currentTime = GetGameTimer() - _gameTimeAtStart;
                         
-                        // Reset variables
+                        // TODO Draw RaceTimer Scaleform
+                        Screen.ShowSubtitle($"Time: {_currentTime}"); // Temp solution
+
+                        if (!Game.IsControlJustReleased(0, Control.SelectCharacterMichael)) continue;
+                        
+                        Screen.ShowNotification("Cancelled Time Trial");
                         _hasStarted = false;
                         _countDownDone = false;
                         _currentTime = 0;
+                        _gameTimeAtStart = 0;
                         return;
                     }
-
-                    _currentTime = GetGameTimer() - _gameTimeAtStart;
                     
-                    // TODO Draw RaceTimer Scaleform
+                    _finalTime = GetGameTimer() - _gameTimeAtStart;
+                    
+                    // TODO RaceComplete Scaleform _timetrialCompletedScaleform
+                    // Perhaps need to draw scaleform EVERY FRAME so create separate Tick
+                    Audio.PlaySoundFrontend("TREVOR_BIG_01");  
+                    _timetrialCompletedScaleform.CallFunction("SHOW_MISSION_PASSED_MESSAGE", $"Time Trial Completed in {_finalTime}ms","", 100, true, 0, true);
+                    _timetrialCompletedScaleform.Render2D();
+                    
+                    _hasStarted = false;
+                    _countDownDone = false;
+                    _currentTime = 0;
+
+                    await Delay(5000);
+                    
+                    _timetrialCompletedScaleform.Dispose();
                 }
             }
             catch (Exception e)

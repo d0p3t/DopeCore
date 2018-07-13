@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>DopeCoreClient</RootNamespace>
-    <AssemblyName>DopeCoreClient</AssemblyName>
+    <AssemblyName>DopeCoreClient.net</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FunEvents\ClubEvent.cs" />
     <Compile Include="Missions\DropOff.cs" />
     <Compile Include="Missions\TimeTrial.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

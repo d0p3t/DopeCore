@@ -274,7 +274,7 @@ namespace DopeCoreClient.Missions
                 // TODO Handle enemy spawns
                 if (playerPed.Position.DistanceToSquared(dropOffLocation) == 75)
                 {
-                    var enemyPed = new Ped(CreatePed(0,(uint)PedHash.BikeHire01, dropOffLocation.X, dropOffLocation.Y, dropOffLocation.Z, 0f, true, false));
+                    var enemyPed = new Ped(CreatePed(0,(uint)PedHash.BikeHire01, dropOffLocation.X, dropOffLocation.Y, dropOffLocation.Z, 0f, false, false));
                     // TODO Create 5 enemies in a certain area or at certain positions and make them aggressive towards PlayerPed.Handle
                 
                 }
